@@ -1,0 +1,3 @@
+For part 2, we added two hidden layers and got rid of the activation (output?) dropping functions.
+
+For part 4, we got rid of the normalization layers, added a third CONV->RELU->POOL set of layers, and removed on of the FC layers.
