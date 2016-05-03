@@ -106,9 +106,10 @@ def train():
       return activations
 
   hidden1 = nn_layer(x, 784, 500, 'layer1')
+  hidden2 = nn_layer(hidden1, 500, 250, 'layer2')
+  hidden3 = nn_layer(hidden2, 250, 100, 'layer3')
 
-  dropped = tf.nn.dropout(hidden1, keep_prob)
-  y = nn_layer(dropped, 500, 10, 'layer4', act=tf.nn.softmax)
+  y = nn_layer(hidden3, 100, 10, 'layer4', act=tf.nn.softmax)
 
 
   with tf.name_scope('cross_entropy'):
