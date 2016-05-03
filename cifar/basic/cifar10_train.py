@@ -55,6 +55,19 @@ tf.app.flags.DEFINE_integer('max_steps', 1000000,
                             """Number of batches to run.""")
 tf.app.flags.DEFINE_boolean('log_device_placement', False,
                             """Whether to log device placement.""")
+tf.app.flags.DEFINE_string('eval_dir', '/tmp/cifar10_eval',
+                           """Directory where to write event logs.""")
+tf.app.flags.DEFINE_string('eval_data', 'test',
+                           """Either 'test' or 'train_eval'.""")
+tf.app.flags.DEFINE_string('checkpoint_dir', '/tmp/cifar10_train',
+                           """Directory where to read model checkpoints.""")
+tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 5,
+                            """How often to run the eval.""")
+tf.app.flags.DEFINE_integer('num_examples', 10000,
+                            """Number of examples to run.""")
+tf.app.flags.DEFINE_boolean('run_once', False,
+                         """Whether to run eval only once.""")
+
 
 
 def train():
@@ -113,8 +126,24 @@ def train():
                              examples_per_sec, sec_per_batch))
 
       if step % 100 == 0:
-        summary_str = sess.run(summary_op)
-        summary_writer.add_summary(summary_str, step)
+        num_iter = int(math.ceil(FLAGS.num_examples / FLAGS.batch_size))
+        true_count = 0  # Counts the number of correct predictions.
+        total_sample_count = num_iter * FLAGS.batch_size
+        i_step = 0
+        while i_step < num_iter:
+          predictions = sess.run([top_k_op])
+          true_count += np.sum(predictions)
+          i_step += 1
+
+      #Compute precision @ 1.
+      	#sess.run(precision.assign(true_count / total_sample_count))
+      	prec = true_count / total_sample_count
+      	print(prec)
+	summary = tf.Summary()
+        summary.ParseFromString(sess.run(summary_op))
+        summary.value.add(tag='accuracy', simple_value=prec)
+        summary_writer.add_summary(summary, step)
+
 
       # Save the model checkpoint periodically.
       if step % 1000 == 0 or (step + 1) == FLAGS.max_steps:
